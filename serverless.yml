@@ -1,0 +1,70 @@
+service: pets-deli-assessment
+description: An Assessment for a backend engineer role by Pets Deli
+
+custom:
+  accountId: ${ file(serverless.env.yml):${self:custom.stage}.ACCOUNT_ID }
+  stage: ${opt:stage, self:provider.stage}
+  tableThroughputs:
+    prod: 30
+    staging: 5
+    dev: 1
+  webpack:
+    includeModules:
+      forceExclude:
+        - aws-sdk
+  pseudoParameters:
+    skipRegionReplace: false
+  dynamodb:
+    start:
+      port: 8000
+      dbPath: './.dynamodb'
+      migrate: true
+      seed: true
+    stages:
+      - ${self:provider.stage}
+  prune:
+    automatic: true
+    number: 5
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+  region: eu-central-1
+  # profile: dev
+  environment: ${file(serverless.env.yml):${self:custom.stage}, file(serverless.env.yml):default}
+  apiKeys:
+    - WEB_API_KEY_${self:custom.stage}
+  ManagedPolicyArns:
+    - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - 's3:*'
+        - 'lambda:InvokeFunction'
+        - iot:*
+        - sqs:*
+      Resource: '*'
+
+functions:
+Outputs:
+  Region:
+    Value:
+      Ref: 'AWS::Region'
+
+resources:
+  - ${file(resources/dataTable.yml)}
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
+  - serverless-pseudo-parameters
+  - serverless-cognito-add-custom-attributes
+  - serverless-prune-plugin
