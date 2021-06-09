@@ -1,4 +1,4 @@
-service: pets-deli-assessment
+service: pets-deli
 description: An Assessment for a backend engineer role by Pets Deli
 
 custom:
@@ -12,6 +12,7 @@ custom:
     includeModules:
       forceExclude:
         - aws-sdk
+  DataTableName: ${self:service}-${self:provider.stage}-data
   pseudoParameters:
     skipRegionReplace: false
   dynamodb:
@@ -54,6 +55,44 @@ provider:
       Resource: '*'
 
 functions:
+  onClickEvent:
+    handler: src/handler/onClickEvents.CreateOnClickEvent
+    events:
+      - http:
+          path: onClick
+          method: post
+          cors: 
+            origin: "*"
+            allowCredentials: false # required for Authorization to be set to Cognito User Pool
+            headers:
+              - Access-Control-Allow-Origin
+              - Authorization
+              - Content-Type
+              - X-Amz-Date
+              - X-Amz-Security-Token
+              - x-api-key
+          private: true
+          warmup: true
+          timeout: 30
+  userClickEvents:
+    handler: src/handler/onClickEvents.GetUserClickEvents
+    events:
+      - http:
+          path: onClick
+          method: get
+          cors: 
+            origin: "*"
+            allowCredentials: false # required for Authorization to be set to Cognito User Pool
+            headers:
+              - Access-Control-Allow-Origin
+              - Authorization
+              - Content-Type
+              - X-Amz-Date
+              - X-Amz-Security-Token
+              - x-api-key
+          private: true
+          warmup: true
+          timeout: 30
 Outputs:
   Region:
     Value:
@@ -64,6 +103,7 @@ resources:
 
 plugins:
   - serverless-webpack
+  - serverless-dynamodb-local
   - serverless-offline
   - serverless-pseudo-parameters
   - serverless-cognito-add-custom-attributes
