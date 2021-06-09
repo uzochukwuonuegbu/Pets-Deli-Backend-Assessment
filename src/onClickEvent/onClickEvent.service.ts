@@ -9,15 +9,14 @@ class OnClickEvent {
 		this.onClickEventDataService = new OnClickEventDataService(dynamoClient);
 	}
 
-	public async processOnCLickEvent(event: onCLickEvent) {
+	public async processOnCLickEvent(event: onCLickEvent): Promise<void> {
 		// Do any other processing here...
 		await this.onClickEventDataService.storeOnClickEvent(event);
 	}
 
-	public async getUserOnCLickEvents(userId: string) {
+	public async getUserOnCLickEvents(userId: string): Promise<onCLickEvent[]> {
 		// Do any other processing here...
-    return await this.onClickEventDataService.getUserOnClickEvents(userId);
-    
+		return await this.onClickEventDataService.getUserOnClickEvents(userId);
 	}
 }
 

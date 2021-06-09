@@ -25,7 +25,7 @@ export class DynamoClient extends DynamoDB.DocumentClient {
 	constructor() {
 		const { aws } = generalConfig;
 		const config: DynamoOptions = {
-      endpoint: aws.dynamoEndpoint,
+			endpoint: aws.dynamoEndpoint,
 			maxRetries: 3,
 			httpOptions: {
 				timeout: 5000,
