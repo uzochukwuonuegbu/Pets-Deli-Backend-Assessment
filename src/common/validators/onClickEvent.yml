@@ -1,0 +1,11 @@
+required:
+  - eventType
+  - eventSource
+  - userId
+properties:
+  eventType:
+    type: string
+  eventSource:
+    type: string
+  userId:
+    type: string

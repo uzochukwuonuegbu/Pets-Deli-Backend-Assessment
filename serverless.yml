@@ -26,6 +26,33 @@ custom:
   prune:
     automatic: true
     number: 5
+  
+  documentation:
+    models:
+      - name: OnClickEventRequest
+        contentType: 'application/json'
+        schema: ${file(src/common/validators/onClickEvent.yml)}
+      - name: 400JsonResponse
+        contentType: 'application/json'
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            statusCode:
+              type: number
+      - name: OnClickEventResponse
+        contentType: "application/json"
+        schema:
+          type: object
+          properties:
+            result:
+              type: string
+  commonModelSchemaFragments:
+    MethodResponse400Json:
+      statusCode: '400'
+      responseModels:
+        "application/json": 400JsonResponse
 
 provider:
   name: aws
@@ -35,71 +62,86 @@ provider:
   # profile: dev
   environment: ${file(serverless.env.yml):${self:custom.stage}, file(serverless.env.yml):default}
   apiKeys:
-    - WEB_API_KEY_${self:custom.stage}
+    - PETS_DELI_API_KEY_${self:custom.stage}
+  apiGateway:
+    apiKeySourceType: HEADER
   ManagedPolicyArns:
     - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
   iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 'lambda:InvokeFunction'
+      Resource:
+        - Fn::Join:
+            - ':'
+            - - arn:aws:lambda
+              - Ref: AWS::Region
+              - Ref: AWS::AccountId
+              - function:${self:service}-${opt:stage, self:provider.stage}-*
+    - Effect: Allow
+      Action:
+        - s3:GetBucketLocation
+        - s3:PutObject
+        - s3:PutObjectAcl
+      Resource: '*'
     - Effect: Allow
       Action:
         - dynamodb:DescribeTable
         - dynamodb:Query
         - dynamodb:Scan
         - dynamodb:GetItem
+        - dynamodb:BatchGetItem
         - dynamodb:PutItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
-        - 's3:*'
-        - 'lambda:InvokeFunction'
-        - iot:*
-        - sqs:*
-      Resource: '*'
+      Resource:
+        - 'Fn::GetAtt': [DataTable, Arn]
+        - Fn::Join:
+          - '/'
+          - - 'Fn::GetAtt': [DataTable, Arn]
+            - 'index/*'
 
 functions:
   onClickEvent:
     handler: src/handler/onClickEvents.CreateOnClickEvent
     events:
       - http:
-          path: onClick
+          documentation:
+            summary: "OnClickEvent"
+            description: "OnClickEvent"
+            requestModels:
+              "application/json": OnClickEventRequest
           method: post
-          cors: 
-            origin: "*"
-            allowCredentials: false # required for Authorization to be set to Cognito User Pool
-            headers:
-              - Access-Control-Allow-Origin
-              - Authorization
-              - Content-Type
-              - X-Amz-Date
-              - X-Amz-Security-Token
-              - x-api-key
+          path: onClick
           private: true
-          warmup: true
-          timeout: 30
+          cors: true
+          reqValidatorName: bodyOnly
+          methodResponses:
+            - statusCode: '200'
+              responseModels:
+                "application/json": OnClickEventResponse
+            - ${self:custom.commonModelSchemaFragments.MethodResponse400Json}
   userClickEvents:
     handler: src/handler/onClickEvents.GetUserClickEvents
     events:
       - http:
-          path: onClick
           method: get
-          cors: 
-            origin: "*"
-            allowCredentials: false # required for Authorization to be set to Cognito User Pool
-            headers:
-              - Access-Control-Allow-Origin
-              - Authorization
-              - Content-Type
-              - X-Amz-Date
-              - X-Amz-Security-Token
-              - x-api-key
+          path: userClicks
           private: true
-          warmup: true
-          timeout: 30
+          cors: true
 Outputs:
   Region:
     Value:
       Ref: 'AWS::Region'
+  DataTableArn:
+    Value:
+      Fn::GetAtt: [DataTable, Arn]
+    Export:
+      Name: ${self:provider.stage}-DataTableArn
 
 resources:
   - ${file(resources/dataTable.yml)}
+  - ${file(resources/requestValidators.yml)}
 
 plugins:
   - serverless-webpack
@@ -108,3 +150,5 @@ plugins:
   - serverless-pseudo-parameters
   - serverless-cognito-add-custom-attributes
   - serverless-prune-plugin
+  - serverless-reqvalidator-plugin
+  - serverless-aws-documentation

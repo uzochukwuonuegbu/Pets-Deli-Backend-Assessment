@@ -15,8 +15,8 @@ export class OnClickEventDataService {
 		const item: any = {
 			...event,
 			dataKey,
-      sKey: `${detailsKeyPrefix}_${event.userId}_${timeStamp}`,
-      timeStamp,
+			sKey: `${detailsKeyPrefix}_${event.userId}_${timeStamp}`,
+			timeStamp,
 		};
 
 		await this.dynamoClient.putItem(tableName, item);

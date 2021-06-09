@@ -4,13 +4,22 @@
   "description": "Backend Assessment",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "sls offline start",
+    "lint": "tslint './**/*.ts'",
+    "build": "tsc -p tsconfig.build.json",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "test": "jest --config ./test/jest.config.json --runInBand --detectOpenHandles --forceExit",
+    "test:watch": "jest --config ./test/jest.config.json --watch",
+    "test:cov": "jest --config ./test/jest.config.json --runInBand --detectOpenHandles --coverage --forceExit"
   },
   "author": "Uzochukwu Onuegbu",
   "license": "ISC",
   "dependencies": {
+    "@types/jest": "^26.0.23",
+    "axios": "^0.21.1",
     "dotenv": "^10.0.0",
     "http-errors": "^1.8.0",
+    "jest": "^27.0.4",
     "middy": "^0.36.0",
     "path": "^0.12.7",
     "serverless-cognito-add-custom-attributes": "^0.3.0",
@@ -18,10 +27,16 @@
     "serverless-offline": "^7.0.0",
     "serverless-prune-plugin": "^1.5.0",
     "serverless-pseudo-parameters": "^2.5.0",
+    "serverless-reqvalidator-plugin": "1.0.3",
     "serverless-webpack": "^5.5.0",
+    "ts-jest": "^27.0.3",
     "ts-loader": "^9.2.3",
     "typescript": "^4.3.2",
+    "validate": "^5.1.0",
     "webpack": "^5.38.1",
     "webpack-node-externals": "^3.0.0"
+  },
+  "devDependencies": {
+    "serverless-aws-documentation": "^1.1.0"
   }
 }
