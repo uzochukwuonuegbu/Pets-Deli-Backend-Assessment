@@ -12,7 +12,7 @@ export const generalConfig = {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || undefined,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || undefined,
     dynamoRegion: process.env.IS_OFFLINE ? 'localhost' : process.env.AWS_REGION,
-    dataDynamoTableName: process.env.DATA_TABLE_NAME,
+    dataTableName: process.env.DATA_TABLE_NAME,
   },
   prod: process.env.ENV === EnumEnvironment.Prod,
   env: process.env.ENV,

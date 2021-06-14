@@ -3,7 +3,7 @@ import { generalConfig } from '../config';
 import { onCLickEvent } from './types';
 import logger from '../common/log.service';
 
-const tableName = generalConfig.aws.dataDynamoTableName;
+const tableName = generalConfig.aws.dataTableName;
 const dataKey = 'onClickEvent';
 const detailsKeyPrefix = 'on_click_event';
 
